@@ -1,0 +1,11 @@
+bin/
+obj/
+output/
+
+.vscode/
+
+*.exe
+*.dll
+
+.env
+.env.*
