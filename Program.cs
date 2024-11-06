@@ -1,15 +1,20 @@
-﻿string url = "https://www.youtube.com/watch?v=rkjNL4dX-U4";
-string outputDirectory = "output";
+﻿using System.Text.Json;
 
-try
-{
-    Console.WriteLine("Letöltés...");
-    await VideoHandler.DownloadVideoAsync(url, outputDirectory);
-}
-catch (Exception ex)
-{
-    Console.WriteLine($"Hiba: {ex.Message}");
-    return;
-}
+Root config = JsonSerializer.Deserialize<Root>(File.ReadAllText("config.json")) ?? throw new Exception("Nincs config fájl.");
 
-Console.WriteLine("Videó letöltve.");
+var url = config.ConfigObject.PLAYLIST_URL;
+
+Console.WriteLine($"URL: {url}");
+
+// try
+// {
+//     Console.WriteLine("Letöltés...");
+//     await VideoHandler.DownloadVideoAsync(url, outputDirectory);
+// }
+// catch (Exception ex)
+// {
+//     Console.WriteLine($"Hiba: {ex.Message}");
+//     return;
+// }
+
+// Console.WriteLine("Videó letöltve.");

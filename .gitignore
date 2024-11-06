@@ -9,3 +9,6 @@ output/
 
 .env
 .env.*
+
+secrets.json
+config.json
