@@ -1,20 +1,12 @@
 ﻿using System.Text.Json;
 
-Root config = JsonSerializer.Deserialize<Root>(File.ReadAllText("config.json")) ?? throw new Exception("Nincs config fájl.");
+ConfigObject config = JsonSerializer.Deserialize<ConfigObject>(File.ReadAllText("config.json")) ?? throw new Exception("Nincs config fájl.");
+var playlist_id = config.PLAYLIST_ID;
+var outputDirectory = config.OUTPUT_DIR;
+var apiKey = config.YOUTUBE_API_KEY;
 
-var url = config.ConfigObject.PLAYLIST_URL;
-
-Console.WriteLine($"URL: {url}");
-
-// try
-// {
-//     Console.WriteLine("Letöltés...");
-//     await VideoHandler.DownloadVideoAsync(url, outputDirectory);
-// }
-// catch (Exception ex)
-// {
-//     Console.WriteLine($"Hiba: {ex.Message}");
-//     return;
-// }
-
-// Console.WriteLine("Videó letöltve.");
+// Checks if playlist contains any videos, downloads them and tags them
+async void MainLoop()
+{
+    var url = $"https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=50&playlistId={playlist_id}&key={apiKey}";
+}
