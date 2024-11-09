@@ -1,5 +1,7 @@
 ﻿using System.Text.Json;
+using Utils;
 
+// TODO: set relative path (abs path is only for testing)
 ConfigObject config = JsonSerializer.Deserialize<ConfigObject>(File.ReadAllText("D:\\Libraries\\Documents\\_Programming\\mark_yt_automation\\reciever-dotnet-2\\config.json")) ?? throw new Exception("Nincs config fájl.");
 var playlist_id = config.PLAYLIST_ID;
 var outputDirectory = config.OUTPUT_DIR;
@@ -7,32 +9,37 @@ var apiKey = config.YOUTUBE_API_KEY;
 
 using var client = new HttpClient();
 
-// Checks if playlist contains any videos, downloads them and tags them
+// Checks if playlist contains any videos, downloads them and removes them from the playlist
 async Task MainLoop()
 {
-    var url = $"https://www.googleapis.com/youtube/v3/playlistItems?part=contentDetails&maxResults=50&playlistId={playlist_id}&key={apiKey}";
+    var youtube = new YoutubeKeyClient(apiKey);
 
-    var response = await client.GetAsync(url);
-
-    if (!response.IsSuccessStatusCode)
+    // Fetch playlist items
+    List<PlaylistItemResponse> playlist;
+    try { playlist = await youtube.GetPlaylistItemsAsync(playlist_id); }
+    catch (Exception ex)
     {
-        throw new Exception($"Failed to fetch playlist: {response.StatusCode}\n{await response.Content.ReadAsStringAsync()}");
-    }
-
-    var json = await response.Content.ReadAsStringAsync();
-
-    var playlist = JsonSerializer.Deserialize<Playlist>(json) ?? throw new Exception("Failed to parse JSON.");
-
-    if (playlist.items.Count == 0)
-    {
-        // TODO: remove to prevent spam
-        Console.WriteLine("No videos found in playlist.");
+        Console.WriteLine($"Hiba lejátszási lista lekérése közben: {ex.Message}");
         return;
     }
 
-    foreach (var item in playlist.items)
+    if (playlist.Count == 0)
     {
-        Console.WriteLine(item.contentDetails.videoId);
+        Console.WriteLine("Lejátszási lista üres.");
+        return;
+    }
+
+    // Download first video
+    try
+    {
+        Console.WriteLine("Letöltés...");
+        await VideoHandler.DownloadVideoAsync(playlist[0].VideoId, outputDirectory);
+        Console.WriteLine("Letöltés kész.");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Hiba letöltés közben: {ex.Message}");
+        return;
     }
 }
 

@@ -10,5 +10,5 @@ output/
 .env
 .env.*
 
-secrets.json
+client_secrets.json
 config.json

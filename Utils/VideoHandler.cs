@@ -7,6 +7,7 @@ using YoutubeExplode.Converter;
 using YoutubeDownloader.Core.Tagging;
 using YoutubeDownloader.Core.Utils;
 
+namespace Utils;
 public static class VideoHandler
 {
     public static async Task DownloadVideoAsync(string url, string outputDirectory)
