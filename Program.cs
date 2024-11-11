@@ -1,13 +1,14 @@
-﻿using System.Text.Json;
+﻿using System.Diagnostics;
+using System.Text.Json;
 using Utils;
 
-// TODO: set relative path (abs path is only for testing)
-ConfigObject config = JsonSerializer.Deserialize<ConfigObject>(File.ReadAllText("D:\\Libraries\\Documents\\_Programming\\mark_yt_automation\\reciever-dotnet-2\\config.json")) ?? throw new Exception("Nincs config fájl.");
+ConfigObject config = JsonSerializer.Deserialize<ConfigObject>(File.ReadAllText("config.json")) ?? throw new Exception("Nincs config fájl.");
 var playlist_id = config.PLAYLIST_ID;
 var outputDirectory = config.OUTPUT_DIR;
 var apiKey = config.YOUTUBE_API_KEY;
-
-using var client = new HttpClient();
+var clientId = config.CLIENT_ID;
+var clientSecret = config.CLIENT_SECRET;
+var redirectUri = config.REDIRECT_URI;
 
 // Checks if playlist contains any videos, downloads them and removes them from the playlist
 async Task MainLoop()
@@ -43,4 +44,7 @@ async Task MainLoop()
     }
 }
 
-await MainLoop();
+// await MainLoop();
+
+var ACCESS_TOKEN = await OAuth.GetAccessTokenAsync(clientId, clientSecret, redirectUri);
+Console.WriteLine($"Access token: {ACCESS_TOKEN}");
