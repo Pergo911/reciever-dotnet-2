@@ -35,20 +35,15 @@ public static class OAuth
 
   private static async Task<TokenObject> DoAuthFlow(string clientId, string clientSecret, string redirectUri)
   {
-    Console.WriteLine("Starting OAuth flow...");
-
     var authLink = $"https://accounts.google.com/o/oauth2/auth?client_id={clientId}&redirect_uri={redirectUri}&scope=https://www.googleapis.com/auth/youtube&response_type=code&access_type=offline&prompt=consent";
-
-    Console.WriteLine("Opening browser...");
     Process.Start(new ProcessStartInfo { FileName = authLink, UseShellExecute = true });
 
     var httpListener = new HttpListener();
     httpListener.Prefixes.Add(redirectUri + "/");
     httpListener.Start();
 
-    Console.WriteLine("Listening for redirect...");
+    Console.WriteLine("Várakozás a hitelesítésre...");
     var context = await httpListener.GetContextAsync();
-    Console.WriteLine("Received redirect.");
 
     var response = context.Response;
     string responseString = "Hitelesitve. Bezarhatod ezt az oldalt.";
@@ -58,7 +53,6 @@ public static class OAuth
     await responseoutput.WriteAsync(buffer, 0, buffer.Length);
     responseoutput.Close();
     httpListener.Stop();
-    Console.WriteLine("Sent response and closed server.");
 
     // Error handling
     string? error = context.Request.QueryString.Get("error");
@@ -74,7 +68,7 @@ public static class OAuth
     }
 
 
-    Console.WriteLine("Authorization successful. Exchanging code for token...");
+    Console.WriteLine("Hitelesítve.");
     var code = context.Request.QueryString.Get("code");
 
     var exchangeUrl = $"https://oauth2.googleapis.com/token?client_id={clientId}&client_secret={clientSecret}&code={code}&grant_type=authorization_code&redirect_uri={redirectUri}";
@@ -106,10 +100,6 @@ public static class OAuth
       expiration = DateTime.Now.AddSeconds(responseContentJson.expires_in)
     };
 
-    Console.WriteLine("Token exchange successful. Saving refresh token...");
-    Console.WriteLine($"New token:\naccess_token: {token.accessToken}\nrefresh_token: {token.refreshToken}\nexpires: {token.expiration}");
-
-
     lastTokenRefresh = DateTime.Now;
 
     var refreshToken = responseContentJson.refresh_token;
@@ -120,15 +110,10 @@ public static class OAuth
   }
 
   private static async Task<TokenObject> RefreshToken(string token, string clientId, string clientSecret) {
-    Console.WriteLine("Refreshing token...");
-    
     var refreshUrl = $"https://oauth2.googleapis.com/token?client_id={clientId}&client_secret={clientSecret}&refresh_token={token}&grant_type=refresh_token";
 
     var httpClient = new HttpClient();
-
     var content = new FormUrlEncodedContent(new Dictionary<string, string>{}); // Empty content
-
-    Console.WriteLine("Sending refresh request...");
     var responseMessage = await httpClient.PostAsync(refreshUrl, content);
 
     if (!responseMessage.IsSuccessStatusCode)
@@ -146,16 +131,12 @@ public static class OAuth
       throw new Exception("Hiba a tokenfrissítésnél.");
     }
 
-    Console.WriteLine("Token refresh successful.");
-
     var newToken = new TokenObject
     {
       accessToken = responseContentJson.access_token,
       refreshToken = token,
       expiration = DateTime.Now.AddSeconds(responseContentJson.expires_in)
     };
-
-    Console.WriteLine($"New token:\naccess_token: {newToken.accessToken}\nrefresh_token: {newToken.refreshToken}\nexpires: {newToken.expiration}");
 
     lastTokenRefresh = DateTime.Now;
 

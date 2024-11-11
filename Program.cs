@@ -44,7 +44,4 @@ async Task MainLoop()
     }
 }
 
-// await MainLoop();
-
-var ACCESS_TOKEN = await OAuth.GetAccessTokenAsync(clientId, clientSecret, redirectUri);
-Console.WriteLine($"Access token: {ACCESS_TOKEN}");
+await MainLoop();
