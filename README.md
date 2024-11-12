@@ -4,7 +4,8 @@
 
 #### Telepítés
 
-- `config.json` legyen .exe-vel egy mappában. Struktúrája legyen a következő:
+- ffmpeg egy példánya legyen a programmal egy mappában. Neve pontosan `ffmpeg.exe` legyen.
+- `config.json` legyen a programmal egy mappában. Struktúrája legyen a következő:
 
 ```json
 {
