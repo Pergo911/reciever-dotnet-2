@@ -9,26 +9,46 @@ public static class OAuth
 {
   private static DateTime lastTokenRefresh = DateTime.MinValue;
   private static TokenObject? currentToken = null;
-  public static async Task<string> GetAccessTokenAsync(string clientId, string clientSecret, string redirectUri) {
-    if (currentToken is null) {
-      if (File.Exists("refresh_token.json")) {
-        var refreshTokenJson = File.ReadAllText("refresh_token.json");
-        var refreshToken = JsonSerializer.Deserialize<Dictionary<string, string>>(refreshTokenJson);
-        if (refreshToken != null && refreshToken.ContainsKey("refresh_token") && refreshToken["refresh_token"] != "") {
-          currentToken = await RefreshToken(refreshToken["refresh_token"], clientId, clientSecret);
+  public static async Task<string> GetAccessTokenAsync(string clientId, string clientSecret, string redirectUri)
+  {
+    if (currentToken is null)
+    {
+      try
+      {
+        // Try to read "refresh_token.json"
+        // Refresh and return on success
+        var dict = JsonSerializer.Deserialize<Dictionary<string, string>>(File.ReadAllText("refresh_token.json")) ?? new Dictionary<string, string>();
+
+        if (dict.ContainsKey("refresh_token") && dict["refresh_token"] != "")
+        {
+          currentToken = await RefreshToken(dict["refresh_token"], clientId, clientSecret);
           return currentToken.accessToken;
         }
+        else
+        {
+          // Continue to catch
+          throw new Exception();
+        }
       }
-    }
+      catch
+      {
+        // Couldn't read refresh token
+        // Prompt user for full OAuth2 flow
+        Console.WriteLine("Nem található korábbról elmentett token. Hitelesítés szükséges.");
+        currentToken = await DoAuthFlow(clientId, clientSecret, redirectUri);
+        return currentToken.accessToken;
+      }
 
-    if (currentToken is null) {
-      Console.WriteLine("Nem található korábbról elmentett token. Hitelesítés szükséges.");
-      currentToken = await DoAuthFlow(clientId, clientSecret, redirectUri);
-      return currentToken.accessToken;
-    } else if (DateTime.Now > currentToken.expiration) {
+    }
+    else if (DateTime.Now > currentToken.expiration)
+    {
+      // Current token is present but expired
       currentToken = await RefreshToken(currentToken.refreshToken, clientId, clientSecret);
       return currentToken.accessToken;
-    } else {
+    }
+    else
+    {
+      // All correct, simply return the token
       return currentToken.accessToken;
     }
   }
@@ -74,8 +94,8 @@ public static class OAuth
     var exchangeUrl = $"https://oauth2.googleapis.com/token?client_id={clientId}&client_secret={clientSecret}&code={code}&grant_type=authorization_code&redirect_uri={redirectUri}";
 
     var httpClient = new HttpClient();
-    
-    var content = new FormUrlEncodedContent(new Dictionary<string, string>{}); // Empty content
+
+    var content = new FormUrlEncodedContent(new Dictionary<string, string> { }); // Empty content
     var responseMessage = await httpClient.PostAsync(exchangeUrl, content);
 
     if (!responseMessage.IsSuccessStatusCode)
@@ -109,11 +129,12 @@ public static class OAuth
     return token;
   }
 
-  private static async Task<TokenObject> RefreshToken(string token, string clientId, string clientSecret) {
+  private static async Task<TokenObject> RefreshToken(string token, string clientId, string clientSecret)
+  {
     var refreshUrl = $"https://oauth2.googleapis.com/token?client_id={clientId}&client_secret={clientSecret}&refresh_token={token}&grant_type=refresh_token";
 
     var httpClient = new HttpClient();
-    var content = new FormUrlEncodedContent(new Dictionary<string, string>{}); // Empty content
+    var content = new FormUrlEncodedContent(new Dictionary<string, string> { }); // Empty content
     var responseMessage = await httpClient.PostAsync(refreshUrl, content);
 
     if (!responseMessage.IsSuccessStatusCode)
