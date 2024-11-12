@@ -7,8 +7,11 @@ var outputDirectory = config.OUTPUT_DIR;
 var clientId = config.CLIENT_ID;
 var clientSecret = config.CLIENT_SECRET;
 var redirectUri = config.REDIRECT_URI;
+var pollingInterval = config.POLLING_INTERVAL;
 
 var httpClient = new HttpClient();
+
+var blockList = new List<string>();
 
 // Checks if playlist contains any videos, downloads them and removes them from the playlist
 async Task MainLoop()
@@ -24,8 +27,9 @@ async Task MainLoop()
         return;
     }
 
-    // We address only the first video, the rest will be handled in the next iteration
-    var playlistItem = playlist[0];
+    // We address only the first video (excluding the blocklist), the rest will be handled in the next iteration
+    var playlistItem = playlist.FirstOrDefault(item => !blockList.Contains(item.videoId));
+    if (playlistItem == null) return;
 
     // Download video
     try
@@ -38,6 +42,9 @@ async Task MainLoop()
     catch (Exception ex)
     {
         Console.WriteLine($"Hiba letöltés közben: {ex.Message}");
+
+        // Add video to blocklist to prevent further download attempts
+        blockList.Add(playlistItem.videoId);
         return;
     }
 
@@ -51,11 +58,14 @@ async Task MainLoop()
     catch (Exception ex)
     {
         Console.WriteLine($"Hiba törlés közben: {ex.Message}");
+
+        // Add video to blocklist to prevent further download attempts
+        blockList.Add(playlistItem.videoId);
         return;
     }
 }
 
-var timer = new PeriodicTimer(TimeSpan.FromSeconds(10));
+var timer = new PeriodicTimer(TimeSpan.FromSeconds(pollingInterval));
 
 while (await timer.WaitForNextTickAsync())
 {

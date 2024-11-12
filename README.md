@@ -12,7 +12,8 @@
   "OUTPUT_DIR": "string", // letöltési mappa elérési útja (pl. D:\\output)
   "CLIENT_ID": "string", // client_id kulcs
   "CLIENT_SECRET": "string", // client_secret kulcs
-  "REDIRECT_URI": "string" // Átirányítás URL (legtöbb esetben http://localhost:3000)
+  "REDIRECT_URI": "string", // Átirányítás URL (legtöbb esetben http://localhost:3000)
+  "POLLING_INTERVAL": "int" // Hozzáadás érzékelés gyakorisága (mp)
 }
 ```
 

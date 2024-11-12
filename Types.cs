@@ -6,6 +6,7 @@ public class ConfigObject
   public required string CLIENT_ID { get; set; }
   public required string CLIENT_SECRET { get; set; }
   public required string REDIRECT_URI { get; set; }
+  public required int POLLING_INTERVAL { get; set; }
 }
 
 // JSON response from YouTube API
