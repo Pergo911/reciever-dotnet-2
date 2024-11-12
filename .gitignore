@@ -10,7 +10,6 @@ output/
 .env
 .env.*
 
-client_secrets.json
 config.json
 
 refresh_token.json

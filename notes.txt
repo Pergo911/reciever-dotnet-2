@@ -1,2 +1,0 @@
-TODO:
- - A teljes log rendszert újra, jelenleg DEBUGRA van optimalizálva, szarul néz ki lol

@@ -31,13 +31,14 @@ async Task MainLoop()
     var playlistItem = playlist.FirstOrDefault(item => !blockList.Contains(item.videoId));
     if (playlistItem == null) return;
 
+    Console.WriteLine("\n" + playlistItem.videoTitle);
+
     // Download video
     try
     {
-        Console.WriteLine(playlistItem.videoTitle);
-        Console.WriteLine("Letöltés...");
+        Console.Write("Letöltés... ");
         await VideoHandler.DownloadVideoAsync(playlistItem.videoId, outputDirectory);
-        Console.WriteLine("Letöltés kész.");
+        Console.WriteLine("Kész.");
     }
     catch (Exception ex)
     {
@@ -51,9 +52,9 @@ async Task MainLoop()
     // Remove downloaded video from playlist
     try
     {
-        Console.WriteLine("Törlés...");
+        Console.Write("Eltávolítás a listából... ");
         await YoutubeRequests.DeletePlaylistItemAsync(playlistItem.id, accessToken, httpClient);
-        Console.WriteLine("Törlés kész.");
+        Console.WriteLine("Kész.");
     }
     catch (Exception ex)
     {
