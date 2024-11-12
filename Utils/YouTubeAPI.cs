@@ -1,48 +1,55 @@
+using System.Net;
 using System.Text.Json;
 
 namespace Utils;
 
-public class YoutubeKeyClient
+public static class YoutubeRequests
 {
-  public YoutubeKeyClient(string apiKey)
+
+  public static async Task<List<PlaylistItem>> GetPlaylistItemsAsync(string playlistId, string accessToken, HttpClient httpClient)
   {
-    ApiKey = apiKey;
-    Client.BaseAddress = new Uri("https://www.googleapis.com/youtube/v3/");
-  }
-
-  public string ApiKey { get; set; }
-
-  private HttpClient Client { get; set; } = new HttpClient();
-
-  public async Task<List<PlaylistItemResponse>> GetPlaylistItemsAsync(string playlistId)
-  {
-    var url = $"playlistItems?part=contentDetails&maxResults=50&playlistId={playlistId}&key={ApiKey}";
-
-    var response = await Client.GetAsync(url);
-
-    if (!response.IsSuccessStatusCode)
+    var req = new HttpRequestMessage
     {
-      throw new Exception($"{response.StatusCode}\n{await response.Content.ReadAsStringAsync()}");
+      Method = HttpMethod.Get,
+      RequestUri = new Uri($"https://www.googleapis.com/youtube/v3/playlistItems?part=contentDetails,snippet&playlistId={playlistId}&maxResults=50"),
+      Headers = {
+       {HttpRequestHeader.Authorization.ToString(), $"Bearer {accessToken}"},
+      }
+    };
+
+    var res = await httpClient.SendAsync(req);
+
+    if (!res.IsSuccessStatusCode)
+    {
+      throw new Exception($"Hiba a lekérdezés során: {res.StatusCode}\n{await res.Content.ReadAsStringAsync()}");
     }
 
-    var json = await response.Content.ReadAsStringAsync();
+    var response = JsonSerializer.Deserialize<PlaylistResponse>(await res.Content.ReadAsStringAsync()) ?? throw new Exception("Hiba a JSON feldolgozás során.");
 
-    var playlist = JsonSerializer.Deserialize<Playlist>(json) ?? throw new Exception("Lejátszási lista JSON hibás.");
-
-    if (playlist.items.Count == 0)
+    return response.items.Select(item => new PlaylistItem
     {
-      return [];
-    }
-
-    return playlist.items.Select(item => new PlaylistItemResponse
-    {
-      Id = item.id,
-      VideoId = item.contentDetails.videoId
+      id = item.id,
+      videoId = item.contentDetails.videoId,
+      videoTitle = item.snippet.title
     }).ToList();
   }
-}
 
-public static class YoutubeOAuthClient
-{
-  /// ...
+  public static async Task DeletePlaylistItemAsync(string id, string accessToken, HttpClient httpClient)
+  {
+    var req = new HttpRequestMessage
+    {
+      Method = HttpMethod.Delete,
+      RequestUri = new Uri($"https://www.googleapis.com/youtube/v3/playlistItems?id={id}"),
+      Headers = {
+       {HttpRequestHeader.Authorization.ToString(), $"Bearer {accessToken}"},
+      }
+    };
+
+    var res = await httpClient.SendAsync(req);
+
+    if (!res.IsSuccessStatusCode)
+    {
+      throw new Exception($"Hiba lejátszási lista elem törlés során: {res.StatusCode}\n{await res.Content.ReadAsStringAsync()}");
+    }
+  }
 }

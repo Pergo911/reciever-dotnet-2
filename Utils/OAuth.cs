@@ -9,6 +9,8 @@ public static class OAuth
 {
   private static DateTime lastTokenRefresh = DateTime.MinValue;
   private static TokenObject? currentToken = null;
+
+  public static bool IsTokenImmediatelyAvailable() { return currentToken != null && currentToken.expiration > DateTime.Now; }
   public static async Task<string> GetAccessTokenAsync(string clientId, string clientSecret, string redirectUri)
   {
     if (currentToken is null)
