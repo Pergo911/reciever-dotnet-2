@@ -7,10 +7,8 @@ namespace Utils;
 
 public static class OAuth
 {
-  private static DateTime lastTokenRefresh = DateTime.MinValue;
   private static TokenObject? currentToken = null;
 
-  public static bool IsTokenImmediatelyAvailable() { return currentToken != null && currentToken.expiration > DateTime.Now; }
   public static async Task<string> GetAccessTokenAsync(string clientId, string clientSecret, string redirectUri)
   {
     if (currentToken is null)
@@ -122,8 +120,6 @@ public static class OAuth
       expiration = DateTime.Now.AddSeconds(responseContentJson.expires_in)
     };
 
-    lastTokenRefresh = DateTime.Now;
-
     var refreshToken = responseContentJson.refresh_token;
     var refreshTokenJson = JsonSerializer.Serialize(new Dictionary<string, string> { { "refresh_token", refreshToken } });
     File.WriteAllText("refresh_token.json", refreshTokenJson);
@@ -160,8 +156,6 @@ public static class OAuth
       refreshToken = token,
       expiration = DateTime.Now.AddSeconds(responseContentJson.expires_in)
     };
-
-    lastTokenRefresh = DateTime.Now;
 
     return newToken;
   }

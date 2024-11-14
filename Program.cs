@@ -11,7 +11,10 @@ var pollingInterval = config.POLLING_INTERVAL;
 
 var httpClient = new HttpClient();
 
+// Load blocklist
 var blockList = new List<string>();
+try { blockList = JsonSerializer.Deserialize<List<string>>(File.ReadAllText("blocklist.json")) ?? new List<string>(); }
+catch { }
 
 // Checks if playlist contains any videos, downloads them and removes them from the playlist
 async Task MainLoop()
@@ -46,6 +49,7 @@ async Task MainLoop()
 
         // Add video to blocklist to prevent further download attempts
         blockList.Add(playlistItem.videoId);
+        File.WriteAllText("blocklist.json", JsonSerializer.Serialize(blockList));
         return;
     }
 
@@ -62,6 +66,7 @@ async Task MainLoop()
 
         // Add video to blocklist to prevent further download attempts
         blockList.Add(playlistItem.videoId);
+        File.WriteAllText("blocklist.json", JsonSerializer.Serialize(blockList));
         return;
     }
 }

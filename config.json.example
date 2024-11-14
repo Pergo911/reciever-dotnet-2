@@ -1,0 +1,8 @@
+{
+  "PLAYLIST_ID": "aaabbbXXXYYYZZZ000",
+  "OUTPUT_DIR": "D:\\output",
+  "CLIENT_ID": "aaabbbXXXYYYZZZ000.apps.googleusercontent.com",
+  "CLIENT_SECRET": "aaabbbXXXYYYZZZ000",
+  "REDIRECT_URI": "http://localhost:3000",
+  "POLLING_INTERVAL": 10
+}
